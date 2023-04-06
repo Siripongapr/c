@@ -4,6 +4,14 @@ const express = require('express') // Common Js (CJS)
 const port = 3000
 const app = express()
 
+const shouldBeLoggedIn = (req,res,next) => {
+  if (req.get('X-Login-Token') != '1234') {
+    return next(new Error('Not Logged In'))
+  }
+  return next()
+}
+app.use(shouldBeLoggedIn)
+
 app.get('/' , (req, res) => {
   res.format({
     'text/html' : () => {
@@ -23,24 +31,37 @@ app.get('/' , (req, res) => {
 })
 
 const users = [
-  { name: 'John Doe' , age: 18 },
-  { name: 'Joe Dan' , age: 18 },
-  { name: 'Jane Dee' , age: 18 },
-  { name: 'Josh Dum' , age: 18 }
+  { name: 'John Doe', age: 18 },
+  { name: 'Joe Dan', age: 21 },
+  { name: 'Jane Dee', age: 15 },
+  { name: 'James Dun', age: 19 }
+
 ]
-app.get('/users/:id', (req, res) => {
-  if (Number.isNaN(+req.params.id)){
-    return res.status(400).send({ error: ' Id is not Number'})
+
+
+
+app.get('/users/:id', shouldBeLoggedIn, (req, res) => {
+  if (Number.isNaN(+req.params.id)) {
+    return res.status(400).send({ error: 'Id is not number' })
   }
   if (req.params.id <= 0) {
-    return res.status(400).send({ error: ' ID is Negative or zero'})
+    return res.status(400).send({ error: 'Id is negative or zero' })
   }
   const user = users[req.params.id - 1]
   if (!user) {
-    return res.status(404).send({ error: 'Not Found'})
+    return res.status(404).send({ error: 'Not found' })
   }
-  return res.send(user)
+  if (req.query.type == 'text') {
+    return res.send(`${user.name} (${user.age})`)
+  } else {
+    // console.log(user)
+    // console.log(req.query.field)
+    // console.log(user[req.query.field])
+    return res.send(req.query.field ? user[req.query.field] : user)
+  }
+
 })
+
 
 // app.get('/hello', (req, res) =>{
 //   res.send('hi')
@@ -62,7 +83,6 @@ app.get('/users/:id', (req, res) => {
 //   res.redirect(301 ,'http://google.com')
 // })
 
-app
 app.listen(port ,() =>{
   console.log(`App start at http://localhost:${port}`)
 })
