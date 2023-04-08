@@ -4,13 +4,7 @@ const express = require('express') // Common Js (CJS)
 const port = 3000
 const app = express()
 
-const shouldBeLoggedIn = (req,res,next) => {
-  if (req.get('X-Login-Token') != '1234') {
-    return next(new Error('Not Logged In'))
-  }
-  return next()
-}
-app.use(shouldBeLoggedIn)
+
 
 app.get('/' , (req, res) => {
   res.format({
@@ -40,23 +34,26 @@ const users = [
 
 
 
-app.get('/users/:id', shouldBeLoggedIn, (req, res) => {
+app.get('/users/:id', (req, res) => {
   if (Number.isNaN(+req.params.id)) {
     return res.status(400).send({ error: 'Id is not number' })
   }
   if (req.params.id <= 0) {
     return res.status(400).send({ error: 'Id is negative or zero' })
   }
+
   const user = users[req.params.id - 1]
+
   if (!user) {
     return res.status(404).send({ error: 'Not found' })
   }
   if (req.query.type == 'text') {
+    console.log('true case')
     return res.send(`${user.name} (${user.age})`)
   } else {
-    // console.log(user)
-    // console.log(req.query.field)
-    // console.log(user[req.query.field])
+    console.log('false case')
+    console.log(user['age'])
+    console.log(users)
     return res.send(req.query.field ? user[req.query.field] : user)
   }
 
