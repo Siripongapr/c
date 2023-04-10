@@ -4,7 +4,14 @@ const express = require('express') // Common Js (CJS)
 const port = 3000
 const app = express()
 
+app.use(express.urlencoded({extended: false})) //req.body
 
+const shouldBeLoggedIn = (req,res, next) => {
+  if (req.get('X-Login-Token') != '1234'){
+    return next(new Error('Not Logged In'))
+  }
+  return next()
+}
 
 app.get('/' , (req, res) => {
   res.format({
@@ -32,8 +39,22 @@ const users = [
 
 ]
 
+app.get('/users/create',(req,res) => {
+  return res.send(`<form action="/users" method="POST">
+    <input type = "text" name="name" placeholder="Name">
+    <input type = "number" name="age" placeholder="Age">
+    <button>Submit</button>
+  </form>`)
+})
 
+app.post('/users', (req,res) => {
+  users.push(req.body)
+  res.redirect(`/users/${users.length}`)
+})
 
+app.get('/users' , (req,res) => {
+  res.send(users)
+})
 app.get('/users/:id', (req, res) => {
   if (Number.isNaN(+req.params.id)) {
     return res.status(400).send({ error: 'Id is not number' })
