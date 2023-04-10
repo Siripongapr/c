@@ -80,6 +80,23 @@ app.get('/users/:id', (req, res) => {
 
 })
 
+app.get('/test-login', (req,res,next) => {
+  const token = req.get('X-Login-Token')
+  if(!token){
+    const err = new Error('X-Login-Token not found')
+    err.status = 401
+    return next(err)
+  }
+  if(token != 1234){
+    const err = new Error('X-Login-Token is incorrect')
+    err.status = 403
+    return next(err)
+  }
+  next()
+},(req,res) => {
+  res.end()
+})
+
 
 // app.get('/hello', (req, res) =>{
 //   res.send('hi')
@@ -100,6 +117,14 @@ app.get('/users/:id', (req, res) => {
 // app.get('/redirect', (req , res) => {
 //   res.redirect(301 ,'http://google.com')
 // })
+
+
+app.use((err, req, res, next) => {
+  if (res.headersSent) {
+    return next(err)
+  }
+  res.status(err.status ?? 500).send({ error: err.message })
+})
 
 app.listen(port ,() =>{
   console.log(`App start at http://localhost:${port}`)
