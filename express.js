@@ -118,6 +118,9 @@ app.get('/test-login', (req,res,next) => {
 //   res.redirect(301 ,'http://google.com')
 // })
 
+app.use((req,res) => {
+  res.status(404).send({error : 'Not found'})
+})
 
 app.use((err, req, res, next) => {
   if (res.headersSent) {
